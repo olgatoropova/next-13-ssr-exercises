@@ -8,61 +8,62 @@ import CheckoutFlow from './CheckoutFlow';
 import './styles.css';
 
 function CheckoutExercise() {
-  const [items, dispatch] = React.useReducer(
-    reducer,
-    null,
-    () => {
-      const savedItems =
-        window.localStorage.getItem('cart-items');
+	const [items, dispatch] = React.useReducer(reducer, []);
+	const [status, setStatus] = React.useState('loading');
 
-      if (savedItems === null) {
-        return [];
-      }
+	React.useEffect(() => {
+		const savedItems = window.localStorage.getItem('cart-items');
 
-      return JSON.parse(savedItems);
-    }
-  );
+		//console.log('getItems=', savedItems);
+		if (savedItems !== null) {
+			dispatch({
+				type: 'load',
+				items: JSON.parse(savedItems)
+			});
+		}
 
-  React.useEffect(() => {
-    window.localStorage.setItem(
-      'cart-items',
-      JSON.stringify(items)
-    );
-  }, [items]);
+		setStatus('success');
+	}, []);
 
-  return (
-    <>
-      <h1>Neighborhood Shop</h1>
+	React.useEffect(() => {
+		window.localStorage.setItem('cart-items', JSON.stringify(items));
+		//console.log('storage=', window.localStorage.getItem('cart-items'));
+	}, [items]);
 
-      <main>
-        <div className="items">
-          {DATA.map((item) => (
-            <StoreItem
-              key={item.id}
-              item={item}
-              handleAddToCart={(item) => {
-                dispatch({
-                  type: 'add-item',
-                  item,
-                });
-              }}
-            />
-          ))}
-        </div>
+	return (
+		<>
+			<h1>Neighborhood Shop</h1>
 
-        <CheckoutFlow
-          items={items}
-          taxRate={0.15}
-          handleDeleteItem={(item) =>
-            dispatch({
-              type: 'delete-item',
-              item,
-            })
-          }
-        />
-      </main>
-    </>
-  );
+			<main>
+				<div className="items">
+					{DATA.map((item) => (
+						<StoreItem
+							key={item.id}
+							item={item}
+							handleAddToCart={(item) => {
+								dispatch({
+									type: 'add-item',
+									item
+								});
+							}}
+						/>
+					))}
+				</div>
+
+				<CheckoutFlow
+					items={items}
+					status={status}
+					taxRate={0.15}
+					handleDeleteItem={(item) =>
+						dispatch({
+							type: 'delete-item',
+							item
+						})
+					}
+				/>
+			</main>
+		</>
+	);
 }
 
 export default CheckoutExercise;
